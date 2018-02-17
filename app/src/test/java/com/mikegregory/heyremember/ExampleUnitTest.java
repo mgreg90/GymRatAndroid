@@ -1,4 +1,4 @@
-package com.mikegregory.gymrat;
+package com.mikegregory.heyremember;
 
 import org.junit.Test;
 

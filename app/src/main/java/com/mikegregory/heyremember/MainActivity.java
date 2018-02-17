@@ -1,4 +1,4 @@
-package com.mikegregory.gymrat;
+package com.mikegregory.heyremember;
 
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -20,6 +20,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
 
 import android.Manifest;
+
+import java.security.Security;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -173,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             startLocationUpdates();
     }
 
-    private void startLocationUpdates() {
+    private void startLocationUpdates() throws SecurityException {
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
