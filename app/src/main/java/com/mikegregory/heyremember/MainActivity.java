@@ -21,7 +21,7 @@ import com.google.android.gms.location.LocationListener;
 
 import android.Manifest;
 
-import java.security.Security;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -34,6 +34,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
+    private App app;
+
+    private double latitude;
+    private double longitude;
 
     private static int UPDATE_INTERVAL = 5000; // Sec
     private static int FASTEST_INTERVAL = 3000; // Sec
@@ -55,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        app = new App(MainActivity.this);
+
         setContentView(R.layout.activity_main);
 
         txtCoordinates = (TextView)findViewById(R.id.txtCoordinates);
@@ -80,7 +87,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         btnGetCoordinates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                displayLocation();
+                try {
+                    displayAndPostLocation();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -127,13 +138,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
+            latitude = mLastLocation.getLatitude();
+            longitude = mLastLocation.getLongitude();
             txtCoordinates.setText(latitude + " / " + longitude);
         } else {
             txtCoordinates.setText("Couldn't get the location. Make sure your device supports location services.");
         }
     }
+
+    private void postLocation() {
+        LocationService.postLocation(app, latitude, longitude);
+    }
+
+    private void displayAndPostLocation() throws IOException {
+        displayLocation();
+        postLocation();
+    }
+
 
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
@@ -170,7 +191,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        displayLocation();
+        try {
+            displayAndPostLocation();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if(mRequestingLocationUpdates)
             startLocationUpdates();
     }
@@ -196,6 +222,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
-        displayLocation();
+        try {
+            displayAndPostLocation();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
